@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GateOS | Condomínios Seguro</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="apple-touch-icon" href="/images/icon-192.png">
+</head>
+
+<body>
+    <div id="toast-container"></div>
+
+    <div id="auth-screen" class="screen active">
+        <div class="auth-card">
+            <div class="logo-large">
+                <span class="material-icons-round">home_work</span>
+                <h1>GATE<span class="highlight">OS</span></h1>
+            </div>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('login')">Entrar</button>
+                <button class="tab-btn" onclick="switchTab('register')">Criar Conta</button>
+            </div>
+            <form id="auth-form" onsubmit="handleAuth(event)">
+                <input type="email" id="email" placeholder="Seu E-mail" required>
+                <input type="password" id="password" placeholder="Sua Senha" required>
+
+                <div id="register-fields" style="display:none; text-align:left;">
+                    <div id="field-codigo">
+                        <label class="input-label">Código de Convite</label>
+                        <input type="text" id="accessCode" placeholder="Insira o código fornecido pelo Síndico">
+
+                        <div class="unit-config-area">
+                            <div class="toggle-row">
+                                <span>É uma Casa Única?</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="isSingleHouse" onchange="toggleUnitFields()">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <div id="unit-details">
+                                <label class="input-label">Sua Identificação:</label>
+                                <div class="segmented-control">
+                                    <input type="radio" name="unitType" id="type-apto" value="apto" checked>
+                                    <label for="type-apto">
+                                        <span class="material-icons-round" style="font-size:1.2rem">apartment</span>
+                                        Apto
+                                    </label>
+                                    <input type="radio" name="unitType" id="type-casa" value="casa">
+                                    <label for="type-casa">
+                                        <span class="material-icons-round" style="font-size:1.2rem">home</span> Casa
+                                    </label>
+                                </div>
+                                <div class="input-row">
+                                    <div class="input-group">
+                                        <input type="text" id="unitNumber" placeholder="Nº (Ex: 503)">
+                                    </div>
+                                    <div class="input-group">
+                                        <input type="text" id="unitBlock" placeholder="Bloco/Torre">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-auth">ACESSAR SISTEMA</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-screen" class="screen">
+        <div id="modal-force-pass" class="modal-overlay" style="z-index: 9999; background: rgba(15, 23, 42, 0.95);">
+            <div class="modal-content" style="text-align: center;">
+                <div class="modal-header">
+                    <h2 style="color: var(--primary);">Segurança GateOS</h2>
+                </div>
+                <div class="modal-body">
+                    <p style="margin-bottom: 20px; font-size: 0.9rem;">Este é o seu primeiro acesso. Por favor, defina
+                        uma senha segura para continuar.</p>
+                    <input type="password" id="new-safe-pass" placeholder="Nova Senha">
+                    <button onclick="salvarNovaSenha()" id="salvarNovaSenha-btn" class="btn-primary" style="width: 100%;">SALVAR SENHA</button>
+                </div>
+            </div>
+        </div>
+        <header>
+            <div class="logo">
+                <span class="material-icons-round">domain</span>
+                <div style="display:flex; flex-direction:column; line-height:1;">
+                    <span>GATE<span class="highlight">OS</span></span>
+                    <small id="condo-name-display"
+                        style="font-size:0.7rem; color:#94a3b8; font-weight:400;">Carregando...</small>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div id="admin-badge"
+                    style="display:none; background:var(--primary); padding:2px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold;">
+                    ADMIN</div>
+                <button class="icon-btn" onclick="logout()"><span class="material-icons-round">logout</span></button>
+            </div>
+        </header>
+
+        <div id="admin-panel" class="container" style="display:none; margin-bottom:20px;">
+            <div
+                style="background: rgba(59, 130, 246, 0.1); border: 1px solid var(--primary); padding:15px; border-radius:12px; text-align:center;">
+                <p style="color:var(--primary); font-size:0.9rem; margin-bottom:5px;">🔐 Convite de Moradores</p>
+                <h2 id="share-code" style="letter-spacing: 2px; font-size:1.5rem; color: #fff;">------</h2>
+                <p id="code-timer"
+                    style="font-size:0.85rem; color:#ef4444; font-weight:bold; margin-top:5px; height: 15px;"></p>
+
+                <button onclick="gerarNovoConvite()" class="btn-outline"
+                    style="margin-top: 15px; padding: 10px; font-size: 0.8rem; border-color: #ef4444; color: #ef4444;">
+                    GERAR CÓDIGO (VÁLIDO POR 15 MIN)
+                </button>
+            </div>
+        </div>
+        <div id="finance-panel" class="container"
+            style="display:none; margin-bottom:20px; border: 1px solid #10b981; background: rgba(16, 185, 129, 0.05);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h3 style="color:#10b981; margin-bottom: 5px; font-size: 0.95rem;">Licença GateOS</h3>
+                    <p style="font-size:0.75rem; color:#94a3b8;">Status: <span id="payment-status"
+                            style="color: white; font-weight: bold;">Aguardando Pagamento</span></p>
+                </div>
+                <button onclick="gerarPagamento()" class="btn-primary" style="background:#10b981; border: none;">
+                    <span class="material-icons-round" style="vertical-align: middle;">payments</span> PAGAR
+                </button>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="add-bar" id="add-device-bar" style="display:none;">
+                <input type="text" id="devName" placeholder="Nome (Ex: Garagem)">
+                <input type="text" id="devSN" placeholder="Serial">
+                <input type="text" id="devCode" placeholder="Senha" style="max-width: 100px;">
+                <button onclick="adicionarDevice()" class="btn-primary"><span
+                        class="material-icons-round">add</span></button>
+            </div>
+
+            <h3 style="color:#94a3b8; margin: 20px 0 10px; font-size:0.9rem;">PORTÕES DISPONÍVEIS</h3>
+            <div class="devices-grid" id="devicesList">
+            </div>
+        </div>
+    </div>
+
+    <div id="logs-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Histórico de Acessos</h2>
+                <button class="close-btn" onclick="toggleLogs(false)"><span
+                        class="material-icons-round">close</span></button>
+            </div>
+            <div class="modal-body">
+                <div id="logs-list" style="max-height: 300px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

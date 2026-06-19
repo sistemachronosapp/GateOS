@@ -1,0 +1,6 @@
+node_modules/
+.env
+database.sqlite
+ControlePortao/secrets.h
+/src/generated/prisma
+pgdata

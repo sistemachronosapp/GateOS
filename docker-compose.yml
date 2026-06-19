@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: gateos_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: gateos_user
+      POSTGRES_PASSWORD: SenhaSuperForte123
+      POSTGRES_DB: gateos_db
+    ports:
+      - "5432:5432"
+    volumes:
+      # Cria uma pasta local chamada 'pgdata' para o banco não sumir se o Docker reiniciar
+      - ./pgdata:/var/lib/postgresql/data
