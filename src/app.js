@@ -28,4 +28,8 @@ app.use('/cortex-api', superAdminRoutes);
 app.use('/condominio', condominioRoutes); // <-- AQUI! Conectando a URL ao arquivo
 app.use('/financeiro', paymentRoutes);
 
+app.get('/', (req, res) => {
+    res.redirect('/home.html');
+});
+
 module.exports = app;
