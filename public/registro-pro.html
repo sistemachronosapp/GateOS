@@ -115,7 +115,7 @@
                                 <div class="mb-3">
                                     <label class="form-label text-secondary small">CNPJ do Condomínio/Empresa</label>
                                     <input type="text" class="form-control" id="reg-cnpj" placeholder="Apenas números"
-                                        required onblur="buscarCNPJPublico()">
+                                        required onblur="buscarCNPJ(this.value)">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label text-secondary small">Razão Social / Nome Fantasia</label>
@@ -188,29 +188,30 @@
             toastElement.addEventListener('hidden.bs.toast', () => toastElement.remove());
         }
 
-        async function buscarCNPJPublico() {
-            const cnpjInput = document.getElementById('reg-cnpj');
-            const nomeInput = document.getElementById('reg-nome');
-            const cnpj = cnpjInput.value.replace(/\D/g, '');
+        async function buscarCNPJ(cnpjInput) {
+            const cnpjLimpo = cnpjInput.replace(/\D/g, '');
 
-            if (cnpj.length !== 14) return;
-
-            nomeInput.value = "Consultando Receita Federal...";
-            nomeInput.disabled = true;
+            if (cnpjLimpo.length !== 14) {
+                showToast("CNPJ incompleto!", "error");
+                return;
+            }
 
             try {
-                const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    nomeInput.value = data.nome_fantasia || data.razao_social || '';
-                } else {
-                    nomeInput.value = '';
-                    showToast("CNPJ não encontrado.", 'error');
+                const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpjLimpo}`);
+
+                if (!response.ok) {
+                    throw new Error("CNPJ não encontrado na Receita Federal");
                 }
-            } catch (err) {
-                nomeInput.value = '';
-            } finally {
-                nomeInput.disabled = false;
+
+                const data = await response.json();
+
+                // Preenche automaticamente o nome do condomínio
+                document.getElementById('reg-nome').value = data.nome_fantasia || data.razao_social;
+                showToast("Dados da Receita Federal importados!", "success");
+
+            } catch (error) {
+                console.error("Erro ao buscar CNPJ:", error);
+                showToast("Não foi possível buscar os dados desse CNPJ.", "error");
             }
         }
 
